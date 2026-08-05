@@ -1,3 +1,11 @@
+import { db } from "./firebase.js";
+import {
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+let table1Data = new Array(100).fill(false);
+let table2Data = new Array(100).fill(false);
 // table 1
 document.addEventListener('DOMContentLoaded', () => {
   const grid = document.getElementById('buttonGrid');
