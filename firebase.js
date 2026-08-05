@@ -1,5 +1,4 @@
-<script type="module">
-  // Import Firebase
+// Import Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
   import {
     getFirestore,
@@ -24,4 +23,3 @@
   const db = getFirestore(app);
 
   console.log("Firebase connected successfully!");
-</script>
