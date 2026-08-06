@@ -7,7 +7,6 @@ import {
 
 const docRef = doc(db, "trackers", "investmentData");
 
-// Define your trackers here with custom lengths
 const CONFIG = [
   {
     gridId: 'buttonGrid',
