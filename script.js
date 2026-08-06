@@ -7,17 +7,37 @@ import {
 
 const docRef = doc(db, "trackers", "investmentData");
 
-// Default initial state for 100 months each
-let trackerState = {
-  list1: new Array(100).fill(false),
-  list2: new Array(100).fill(false)
-};
+// Define your trackers here with custom lengths
+const CONFIG = [
+  {
+    gridId: 'buttonGrid',
+    progressBarId: 'progressBar',
+    stateKey: 'list1',
+    length: 100 // List 1 has 100 months
+  },
+  {
+    gridId: 'buttonGrid2',
+    progressBarId: 'progressBar2',
+    stateKey: 'list2',
+    length: 36  // List 2 has 36 months
+  }
+];
+
+// Initialize dynamic tracker state object
+let trackerState = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Setup default state based on configuration length
+  CONFIG.forEach(tracker => {
+    trackerState[tracker.stateKey] = new Array(tracker.length).fill(false);
+  });
+
   await loadTrackerData();
   
-  setupGrid('buttonGrid', 'progressBar', 'list1');
-  setupGrid('buttonGrid2', 'progressBar2', 'list2');
+  // Render each configured grid dynamically
+  CONFIG.forEach(tracker => {
+    setupGrid(tracker);
+  });
 });
 
 // Load saved button states from Firestore
@@ -25,7 +45,13 @@ async function loadTrackerData() {
   try {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      trackerState = docSnap.data();
+      const savedData = docSnap.data();
+      // Merge saved data while retaining structural length array integrity
+      CONFIG.forEach(tracker => {
+        if (savedData[tracker.stateKey]) {
+          trackerState[tracker.stateKey] = savedData[tracker.stateKey];
+        }
+      });
     }
   } catch (error) {
     console.error("Error fetching tracker data:", error);
@@ -41,19 +67,21 @@ async function saveTrackerData() {
   }
 }
 
-// Reusable function to initialize and track each grid independently
-function setupGrid(gridId, progressBarId, stateKey) {
+// Reusable function to initialize each grid based on its unique configuration
+function setupGrid({ gridId, progressBarId, stateKey, length }) {
   const grid = document.getElementById(gridId);
   const progressBar = document.getElementById(progressBarId);
 
+  if (!grid || !progressBar) return;
+
   grid.innerHTML = ''; // Clear existing DOM elements
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < length; i++) {
     const btn = document.createElement('button');
     btn.className = 'tracker-btn';
     btn.textContent = "Month " + (i + 1);
 
-    // Apply active class if stored as true in Firestore state
+    // Apply active class if stored as true in state
     if (trackerState[stateKey][i]) {
       btn.classList.add('active');
     }
@@ -62,21 +90,20 @@ function setupGrid(gridId, progressBarId, stateKey) {
       btn.classList.toggle('active');
       trackerState[stateKey][i] = btn.classList.contains('active');
 
-      updateProgressBar(grid, progressBar);
+      updateProgressBar(grid, progressBar, length);
       await saveTrackerData();
     });
 
     grid.appendChild(btn);
   }
 
-  updateProgressBar(grid, progressBar);
+  updateProgressBar(grid, progressBar, length);
 }
 
-// Scoped progress bar updater
-function updateProgressBar(gridElement, progressBarElement) {
+// Progress bar updater scaled to the specific list's total length
+function updateProgressBar(gridElement, progressBarElement, totalLength) {
   const activeCount = gridElement.querySelectorAll('.tracker-btn.active').length;
-  const percent = Math.round((activeCount / 100) * 100);
+  const percent = Math.round((activeCount / totalLength) * 100);
   progressBarElement.style.width = percent + '%';
   progressBarElement.textContent = percent + '%';
 }
-console.log("Script loaded and event listeners set up.");
