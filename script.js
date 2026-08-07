@@ -13,13 +13,13 @@ const CONFIG = [
     gridId: 'buttonGrid',
     progressBarId: 'progressBar',
     stateKey: 'list1',
-    length: 100 // List 1 has 100 months
+    length: 60 // List 1 has 100 months
   },
   {
     gridId: 'buttonGrid2',
     progressBarId: 'progressBar2',
     stateKey: 'list2',
-    length: 36  // List 2 has 36 months
+    length: 11  // List 2 has 36 months
   }
 ];
 
