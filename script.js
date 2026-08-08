@@ -12,28 +12,25 @@ import {
 
 // =========================================
 // ⚙️ CONFIGURATION & CONSTANTS
-// ==========================================
+// =========================================
 
-// Change your collection name here if needed
 const DATABASE_COLLECTION = "trackers"; 
 
-// Easily edit month counts or add new trackers here
 const CONFIG = [
   { 
     gridId: 'buttonGrid', 
     progressBarId: 'progressBar', 
     stateKey: 'list1', 
-    length: 60 // Change this number to adjust Month count for List 1
+    length: 60 
   },
   { 
     gridId: 'buttonGrid2', 
     progressBarId: 'progressBar2', 
     stateKey: 'list2', 
-    length: 11  // Change this number to adjust Month count for List 2
+    length: 11 
   }
 ];
 
-// State tracking
 let currentUser = null;
 let trackerState = {};
 
@@ -50,15 +47,15 @@ const userName = document.getElementById('userName');
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    userName.textContent = `Hello, ${user.displayName}`;
-    loginBtn.style.display = 'none';
-    userInfo.style.display = 'flex';
+    if (userName) userName.textContent = `Hello, ${user.displayName || user.email}`;
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (userInfo) userInfo.style.display = 'flex';
     
     await loadTrackerData();
   } else {
     currentUser = null;
-    loginBtn.style.display = 'inline-block';
-    userInfo.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'inline-block';
+    if (userInfo) userInfo.style.display = 'none';
     
     resetTrackerState();
   }
@@ -66,21 +63,25 @@ onAuthStateChanged(auth, async (user) => {
   renderGrids();
 });
 
-loginBtn.addEventListener('click', async () => {
-  try {
-    await signInWithPopup(auth, googleProvider);
-  } catch (error) {
-    console.error("Login failed:", error);
-  }
-});
+if (loginBtn) {
+  loginBtn.addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  });
+}
 
-logoutBtn.addEventListener('click', async () => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
-});
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  });
+}
 
 // ==========================================
 // 💾 FIRESTORE DATA MANAGEMENT
@@ -93,7 +94,6 @@ function resetTrackerState() {
   });
 }
 
-// Load data dynamically using the configured collection and user ID
 async function loadTrackerData() {
   if (!currentUser) return;
   
@@ -107,7 +107,6 @@ async function loadTrackerData() {
       
       CONFIG.forEach(tracker => {
         if (savedData[tracker.stateKey]) {
-          // Fill existing saved states, preserving target array lengths
           const savedArray = savedData[tracker.stateKey];
           for (let i = 0; i < tracker.length; i++) {
             if (savedArray[i] !== undefined) {
@@ -122,7 +121,6 @@ async function loadTrackerData() {
   }
 }
 
-// Save current state array
 async function saveTrackerData() {
   if (!currentUser) {
     alert("Please sign in to save your progress!");
