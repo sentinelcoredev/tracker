@@ -124,3 +124,90 @@ article {
     gap: 6px;
   }
 }
+/* ==========================================
+   🔑 AUTHENTICATION BUTTON ANIMATIONS & STYLES
+   ========================================== */
+
+.auth-btn {
+  position: relative;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  
+  /* Smooth transition timing for all properties */
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.3s ease;
+
+  /* Subtle entrance animation on load */
+  animation: authBtnEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hover State: Lift up & enhance glow */
+.auth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+  background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
+}
+
+/* Click/Active State: Physical press feedback */
+.auth-btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+/* Shimmer Effect: Light shine sweeps across button on hover */
+.auth-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  transition: left 0.6s ease;
+}
+
+.auth-btn:hover::before {
+  left: 100%;
+}
+
+/* Specific styling for Sign Out button */
+#logoutBtn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+#logoutBtn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+#logoutBtn:active {
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+/* Entrance Keyframe */
+@keyframes authBtnEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
