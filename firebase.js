@@ -1,8 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-const firebaseConfig = { apiKey: "AIzaSyC5Qqy4SoefGJUfgQj3YEUVeXct9jksqhM",
+const firebaseConfig = {
+  apiKey: "AIzaSyC5Qqy4SoefGJUfgQj3YEUVeXct9jksqhM",
   authDomain: "investment-calculator-e8fa7.firebaseapp.com",
   projectId: "investment-calculator-e8fa7",
   storageBucket: "investment-calculator-e8fa7.firebasestorage.app",
@@ -12,7 +13,6 @@ const firebaseConfig = { apiKey: "AIzaSyC5Qqy4SoefGJUfgQj3YEUVeXct9jksqhM",
 };
 
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const provider = new GoogleAuthProvider();
-export { signInWithPopup, signOut, onAuthStateChanged, doc, setDoc, getDoc };
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
