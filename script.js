@@ -10,7 +10,7 @@ import {
 // ==========================================
 
 const DATABASE_COLLECTION = "trackers"; 
-const DEFAULT_DOC_ID = "default_user"; // Replace with your desired document ID
+const DEFAULT_DOC_ID = "default_user"; 
 
 const CONFIG = [
   { 
@@ -29,11 +29,12 @@ const CONFIG = [
 
 let trackerState = {};
 
-// Initialize application on load
+// Initialize application
 init();
 
 async function init() {
   resetTrackerState();
+  // Wait for data to load BEFORE drawing the buttons
   await loadTrackerData(DEFAULT_DOC_ID);
   renderGrids();
 }
@@ -68,18 +69,19 @@ export async function loadTrackerData(docId) {
         }
       });
     }
-    return trackerState;
   } catch (error) {
-    console.error("Error fetching tracker data:", error);
+    console.error("Error fetching tracker data from Firestore:", error);
   }
 }
 
-export async function saveTrackerData(docId, updatedState) {
+export async function saveTrackerData(docId) {
   const userDocRef = doc(db, DATABASE_COLLECTION, docId);
   try {
-    await setDoc(userDocRef, updatedState || trackerState, { merge: true });
+    await setDoc(userDocRef, trackerState, { merge: true });
+    console.log("Data successfully saved to Firestore!");
   } catch (error) {
-    console.error("Error saving tracker data:", error);
+    console.error("Error saving tracker data to Firestore:", error);
+    alert("Failed to save data. Check browser console for details.");
   }
 }
 
