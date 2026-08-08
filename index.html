@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Investment Tracker</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Prevents the browser from making a failing /favicon.ico request -->
-<link rel="icon" href="data:,">
 </head>
 <body>
   <header class="auth-container">
@@ -19,23 +17,21 @@
 
   <h1 class="name">Amount Paid Tracker</h1>
 
-<article>
-  <h2>Tata AIG</h2>
-  <div class="progress-container">
-    <div id="progressBar" class="progress-bar">0%</div>
-  </div>
-  <!-- Added id="buttonGrid" below -->
-  <div id="buttonGrid" class="button-grid"></div>
-</article>
+  <article>
+    <h2 class="list">Tata AIG</h2>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar">0%</div>
+    </div>
+    <div class="button-grid" id="buttonGrid"></div>
+  </article>
 
-<article>
-  <h2>Malabar Gold</h2>
-  <div class="progress-container">
-    <div id="progressBar2" class="progress-bar">0%</div>
-  </div>
-  <!-- Added id="buttonGrid2" below -->
-  <div id="buttonGrid2" class="button-grid"></div>
-</article>
+  <article>
+    <h2 class="list">Malabar Gold</h2>
+    <div class="progress-container2">
+      <div class="progress-bar" id="progressBar2">0%</div>
+    </div>
+    <div class="button-grid2" id="buttonGrid2"></div>
+  </article>
 
   <script type="module" src="script.js"></script>
 </body>
