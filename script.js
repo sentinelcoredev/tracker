@@ -1,9 +1,4 @@
-import { db, auth, googleProvider } from "./firebase.js";
-import { 
-  signInWithPopup, 
-  signOut, 
-  onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { db } from "./firebase.js";
 import { 
   doc, 
   setDoc, 
@@ -15,6 +10,7 @@ import {
 // ==========================================
 
 const DATABASE_COLLECTION = "trackers"; 
+const DEFAULT_DOC_ID = "default_user"; // Replace with your desired document ID
 
 const CONFIG = [
   { 
@@ -31,54 +27,16 @@ const CONFIG = [
   }
 ];
 
-let currentUser = null;
 let trackerState = {};
 
-// UI elements
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const userInfo = document.getElementById('userInfo');
-const userName = document.getElementById('userName');
+// Initialize application on load
+init();
 
-// ==========================================
-// 🔐 AUTHENTICATION & INITIALIZATION
-// ==========================================
-
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    currentUser = user;
-    userName.textContent = `Hello, ${user.displayName || 'User'}`;
-    loginBtn.style.display = 'none';
-    userInfo.style.display = 'flex';
-    
-    await loadTrackerData();
-  } else {
-    currentUser = null;
-    loginBtn.style.display = 'inline-block';
-    userInfo.style.display = 'none';
-    
-    resetTrackerState();
-  }
-  
+async function init() {
+  resetTrackerState();
+  await loadTrackerData(DEFAULT_DOC_ID);
   renderGrids();
-});
-
-loginBtn.addEventListener('click', async () => {
-  try {
-    await signInWithPopup(auth, googleProvider);
-  } catch (error) {
-    console.error("Login failed:", error.code, error.message);
-    alert(`Authentication failed: ${error.message}`);
-  }
-});
-
-logoutBtn.addEventListener('click', async () => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
-});
+}
 
 // ==========================================
 // 💾 FIRESTORE DATA MANAGEMENT
@@ -91,11 +49,8 @@ function resetTrackerState() {
   });
 }
 
-async function loadTrackerData() {
-  if (!currentUser) return;
-  
-  resetTrackerState();
-  const userDocRef = doc(db, DATABASE_COLLECTION, currentUser.uid);
+export async function loadTrackerData(docId) {
+  const userDocRef = doc(db, DATABASE_COLLECTION, docId);
 
   try {
     const docSnap = await getDoc(userDocRef);
@@ -113,20 +68,16 @@ async function loadTrackerData() {
         }
       });
     }
+    return trackerState;
   } catch (error) {
     console.error("Error fetching tracker data:", error);
   }
 }
 
-async function saveTrackerData() {
-  if (!currentUser) {
-    alert("Please sign in to save your progress!");
-    return;
-  }
-
-  const userDocRef = doc(db, DATABASE_COLLECTION, currentUser.uid);
+export async function saveTrackerData(docId, updatedState) {
+  const userDocRef = doc(db, DATABASE_COLLECTION, docId);
   try {
-    await setDoc(userDocRef, trackerState, { merge: true });
+    await setDoc(userDocRef, updatedState || trackerState, { merge: true });
   } catch (error) {
     console.error("Error saving tracker data:", error);
   }
@@ -157,16 +108,11 @@ function setupGrid({ gridId, progressBarId, stateKey, length }) {
     }
 
     btn.addEventListener('click', async () => {
-      if (!currentUser) {
-        alert("Please sign in to modify tracking data.");
-        return;
-      }
-      
       btn.classList.toggle('active');
       trackerState[stateKey][i] = btn.classList.contains('active');
 
       updateProgressBar(grid, progressBar, length);
-      await saveTrackerData();
+      await saveTrackerData(DEFAULT_DOC_ID);
     });
 
     grid.appendChild(btn);
