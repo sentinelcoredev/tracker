@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amount Paid Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <header class="app-header">
+    <h1 class="name">Amount Paid Tracker</h1>
+    <div class="auth-container">
+      <div id="userInfo" class="user-info" style="display: none;">
+        <span id="userName"></span>
+        <button id="logoutBtn" class="auth-btn">Sign Out</button>
+      </div>
+      <button id="loginBtn" class="auth-btn">Sign in with Google</button>
+    </div>
+  </header>
+
+  <main class="content-container">
+    <article class="tracker-card">
+      <h2 class="list">Tata AIG</h2>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar">0%</div>
+      </div>
+      <div class="button-grid" id="buttonGrid"></div>
+    </article>
+
+    <article class="tracker-card">
+      <h2 class="list">Malabar Gold</h2>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar2">0%</div>
+      </div>
+      <div class="button-grid" id="buttonGrid2"></div>
+    </article>
+  </main>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
