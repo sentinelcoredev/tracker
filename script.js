@@ -1,55 +1,119 @@
-//Deployment: 21:44 7/8/26
-import { db } from "./firebase.js";
+import { db, auth, googleProvider } from "./firebase.js";
+import {
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 import {
   doc,
   setDoc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-const docRef = doc(db, "trackers", "investmentData");
+// ==========================================
+// ⚙️ CONFIGURATION & CONSTANTS
+// ==========================================
 
+// Change your collection name here if needed
+const DATABASE_COLLECTION = "trackers"; 
+
+// Easily edit month counts or add new trackers here
 const CONFIG = [
-  {
-    gridId: 'buttonGrid',
-    progressBarId: 'progressBar',
-    stateKey: 'list1',
-    length: 60 // List 1 has 100 months
+  { 
+    gridId: 'buttonGrid', 
+    progressBarId: 'progressBar', 
+    stateKey: 'list1', 
+    length: 60 // Change this number to adjust Month count for List 1
   },
-  {
-    gridId: 'buttonGrid2',
-    progressBarId: 'progressBar2',
-    stateKey: 'list2',
-    length: 11  // List 2 has 36 months
+  { 
+    gridId: 'buttonGrid2', 
+    progressBarId: 'progressBar2', 
+    stateKey: 'list2', 
+    length: 11  // Change this number to adjust Month count for List 2
   }
 ];
 
-// Initialize dynamic tracker state object
+// State tracking
+let currentUser = null;
 let trackerState = {};
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // Setup default state based on configuration length
+// UI elements
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const userInfo = document.getElementById('userInfo');
+const userName = document.getElementById('userName');
+
+// ==========================================
+// 🔐 AUTHENTICATION & INITIALIZATION
+// ==========================================
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    userName.textContent = `Hello, ${user.displayName}`;
+    loginBtn.style.display = 'none';
+    userInfo.style.display = 'flex';
+    
+    await loadTrackerData();
+  } else {
+    currentUser = null;
+    loginBtn.style.display = 'inline-block';
+    userInfo.style.display = 'none';
+    
+    resetTrackerState();
+  }
+  
+  renderGrids();
+});
+
+loginBtn.addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch (error) {
+    console.error("Login failed:", error);
+  }
+});
+
+logoutBtn.addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+});
+
+// ==========================================
+// 💾 FIRESTORE DATA MANAGEMENT
+// ==========================================
+
+function resetTrackerState() {
+  trackerState = {};
   CONFIG.forEach(tracker => {
     trackerState[tracker.stateKey] = new Array(tracker.length).fill(false);
   });
+}
 
-  await loadTrackerData();
-  
-  // Render each configured grid dynamically
-  CONFIG.forEach(tracker => {
-    setupGrid(tracker);
-  });
-});
-
-// Load saved button states from Firestore
+// Load data dynamically using the configured collection and user ID
 async function loadTrackerData() {
+  if (!currentUser) return;
+  
+  resetTrackerState();
+  const userDocRef = doc(db, DATABASE_COLLECTION, currentUser.uid);
+
   try {
-    const docSnap = await getDoc(docRef);
+    const docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
       const savedData = docSnap.data();
-      // Merge saved data while retaining structural length array integrity
+      
       CONFIG.forEach(tracker => {
         if (savedData[tracker.stateKey]) {
-          trackerState[tracker.stateKey] = savedData[tracker.stateKey];
+          // Fill existing saved states, preserving target array lengths
+          const savedArray = savedData[tracker.stateKey];
+          for (let i = 0; i < tracker.length; i++) {
+            if (savedArray[i] !== undefined) {
+              trackerState[tracker.stateKey][i] = savedArray[i];
+            }
+          }
         }
       });
     }
@@ -58,35 +122,51 @@ async function loadTrackerData() {
   }
 }
 
-// Save current button states to Firestore
+// Save current state array
 async function saveTrackerData() {
+  if (!currentUser) {
+    alert("Please sign in to save your progress!");
+    return;
+  }
+
+  const userDocRef = doc(db, DATABASE_COLLECTION, currentUser.uid);
   try {
-    await setDoc(docRef, trackerState);
+    await setDoc(userDocRef, trackerState, { merge: true });
   } catch (error) {
     console.error("Error saving tracker data:", error);
   }
 }
 
-// Reusable function to initialize each grid based on its unique configuration
+// ==========================================
+// 🎨 UI RENDER FUNCTIONS
+// ==========================================
+
+function renderGrids() {
+  CONFIG.forEach(tracker => setupGrid(tracker));
+}
+
 function setupGrid({ gridId, progressBarId, stateKey, length }) {
   const grid = document.getElementById(gridId);
   const progressBar = document.getElementById(progressBarId);
-
   if (!grid || !progressBar) return;
 
-  grid.innerHTML = ''; // Clear existing DOM elements
+  grid.innerHTML = '';
 
   for (let i = 0; i < length; i++) {
     const btn = document.createElement('button');
     btn.className = 'tracker-btn';
     btn.textContent = "Month " + (i + 1);
 
-    // Apply active class if stored as true in state
-    if (trackerState[stateKey][i]) {
+    if (trackerState[stateKey] && trackerState[stateKey][i]) {
       btn.classList.add('active');
     }
 
     btn.addEventListener('click', async () => {
+      if (!currentUser) {
+        alert("Please sign in to modify tracking data.");
+        return;
+      }
+      
       btn.classList.toggle('active');
       trackerState[stateKey][i] = btn.classList.contains('active');
 
@@ -100,7 +180,6 @@ function setupGrid({ gridId, progressBarId, stateKey, length }) {
   updateProgressBar(grid, progressBar, length);
 }
 
-// Progress bar updater scaled to the specific list's total length
 function updateProgressBar(gridElement, progressBarElement, totalLength) {
   const activeCount = gridElement.querySelectorAll('.tracker-btn.active').length;
   const percent = Math.round((activeCount / totalLength) * 100);
